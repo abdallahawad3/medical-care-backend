@@ -360,7 +360,6 @@ export const loginDoctor = asyncWrapper(async (req: Request, res: Response, next
   }
   console.log(password, doctor);
   const isMatch = await bcrypt.compare(password, doctor.password);
-  console.log("isMatch ===>", isMatch);
   if (!isMatch) {
     throw new ForbiddenError("Invalid credentials");
   }
