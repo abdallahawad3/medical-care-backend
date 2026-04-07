@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import type { IAppointment } from "../interfaces/index.js";
 
 const AppointmentSchema = new mongoose.Schema(
   {
@@ -66,6 +67,6 @@ const AppointmentSchema = new mongoose.Schema(
   },
 );
 
-const AppointmentModel = mongoose.model("Appointment", AppointmentSchema);
+const AppointmentModel = mongoose.model<IAppointment>("Appointment", AppointmentSchema);
 
 export default AppointmentModel;

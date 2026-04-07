@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import { time } from "node:console";
 
 const DoctorSchema = new mongoose.Schema(
@@ -38,6 +38,17 @@ const DoctorSchema = new mongoose.Schema(
     success: { type: String, default: "" },
     patients: { type: String, default: "" },
     rating: { type: Number, default: 0 },
+    owner: {
+      type: Schema.Types.ObjectId,
+      ref: "User", // or whatever your owner model is
+      default: null,
+    },
+    image: { type: String, default: null },
+    avatarUrl: { type: String, default: null },
+    profileImage: {
+      url: { type: String, default: null },
+      publicId: { type: String, default: null },
+    },
   },
   { timestamps: true },
 );

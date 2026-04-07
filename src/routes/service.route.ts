@@ -7,9 +7,13 @@ import {
   getServices,
   updateService,
 } from "../controllers/service.controller.js";
-
+import { fileURLToPath } from "node:url";
+import path from "node:path";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const tempDir = path.join(__dirname, "../temp");
 const router = Router();
-const upload = multer({ dest: "/temp" });
+const upload = multer({ dest: tempDir });
 
 router.get("/", getServices);
 router.get("/:id", getServiceById);
