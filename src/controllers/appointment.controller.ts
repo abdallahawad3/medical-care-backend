@@ -404,14 +404,13 @@ export const confirmPayment = asyncWrapper(async (req: Request, res: Response) =
   if (!appt) {
     const meta = session.metadata || {};
     if (meta.doctorId && meta.mobile && meta.patientName) {
-    
       appt = await AppointmentModel.findOneAndUpdate(
         {
           doctorId: new Types.ObjectId(meta.doctorId),
           mobile: meta.mobile,
           patientName: meta.patientName,
           fees: Math.round((session.amount_total || 0) / 100) || undefined,
-        },
+        } as any,
         {
           "payment.status": "Paid",
           "payment.providerId": session.payment_intent || null,
