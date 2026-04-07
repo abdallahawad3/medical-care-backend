@@ -62,7 +62,7 @@ function resolveClerkUserId(req: Request) {
 }
 
 // To Create Service Appointment
-const createServiceAppointment = asyncWrapper(
+export const createServiceAppointment = asyncWrapper(
   async (req: Request, res: Response, next: NextFunction) => {
     const body = req.body || {};
     const clerkUserId = resolveClerkUserId(req);
@@ -284,42 +284,31 @@ const createServiceAppointment = asyncWrapper(
 );
 
 // Confirmation of payment
-const confirmPayment = asyncWrapper(async (req: Request, res: Response, next: NextFunction) => {
-  const { session_id } = req.query;
-  if (!session_id || typeof session_id !== "string") {
-    throw new ValidationError("session_id query parameter is required");
-  }
-  if (!stripe) {
-    throw new ConflictError("Payment processing is not configured. Stripe secret key is missing.");
-  }
-  let session;
-  try {
-    session = await stripe.checkout.sessions.retrieve(String(session_id));
-  } catch (err) {
-    console.error("Stripe retrieve session error:", err);
-    throw new NotFoundError("Payment session not found");
-  }
+export const confirmPayment = asyncWrapper(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { session_id } = req.query;
+    if (!session_id || typeof session_id !== "string") {
+      throw new ValidationError("session_id query parameter is required");
+    }
+    if (!stripe) {
+      throw new ConflictError(
+        "Payment processing is not configured. Stripe secret key is missing.",
+      );
+    }
+    let session;
+    try {
+      session = await stripe.checkout.sessions.retrieve(String(session_id));
+    } catch (err) {
+      console.error("Stripe retrieve session error:", err);
+      throw new NotFoundError("Payment session not found");
+    }
 
-  if (!session || session.payment_status !== "paid") {
-    throw new ConflictError("Payment not completed");
-  }
+    if (!session || session.payment_status !== "paid") {
+      throw new ConflictError("Payment not completed");
+    }
 
-  let appt = await ServiceAppointmentModel.findOneAndUpdate(
-    { "payment.sessionId": session_id },
-    {
-      $set: {
-        "payment.status": "Confirmed",
-        "payment.providerId": session.payment_intent || "",
-        "payment.paidAt": new Date(),
-        status: "Confirmed",
-      },
-    },
-    { new: true },
-  );
-
-  if (!appt && session.metadata?.appointmentId) {
-    appt = await ServiceAppointmentModel.findOneAndUpdate(
-      { _id: session.metadata.appointmentId },
+    let appt = await ServiceAppointmentModel.findOneAndUpdate(
+      { "payment.sessionId": session_id },
       {
         $set: {
           "payment.status": "Confirmed",
@@ -330,13 +319,28 @@ const confirmPayment = asyncWrapper(async (req: Request, res: Response, next: Ne
       },
       { new: true },
     );
-  }
 
-  if (!appt)
-    throw new NotFoundError(
-      "Appointment record not found for this payment. Please contact support with your payment details.",
-    );
-});
+    if (!appt && session.metadata?.appointmentId) {
+      appt = await ServiceAppointmentModel.findOneAndUpdate(
+        { _id: session.metadata.appointmentId },
+        {
+          $set: {
+            "payment.status": "Confirmed",
+            "payment.providerId": session.payment_intent || "",
+            "payment.paidAt": new Date(),
+            status: "Confirmed",
+          },
+        },
+        { new: true },
+      );
+    }
+
+    if (!appt)
+      throw new NotFoundError(
+        "Appointment record not found for this payment. Please contact support with your payment details.",
+      );
+  },
+);
 
 export const getServiceAppointments = asyncWrapper(
   async (req: Request, res: Response, next: NextFunction) => {
