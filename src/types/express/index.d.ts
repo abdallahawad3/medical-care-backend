@@ -5,6 +5,13 @@ declare global {
     interface Request {
       file?: Express.Multer.File;
       doctor?: DoctorPayload;
+      auth?: {
+        userId?: string;
+        user_id?: string;
+        user?: {
+          id?: string;
+        };
+      };
     }
   }
 }
