@@ -6,6 +6,7 @@ import connectDB from "./config/db.js";
 import globalErrorHandler from "./middlewares/globalError.js";
 import DoctorRoute from "./routes/doctor.route.js";
 import ServiceRoute from "./routes/service.route.js";
+import AppointmentRoute from "./routes/appointment.router.js";
 dotenv.config();
 
 const app = express();
@@ -22,7 +23,7 @@ await connectDB();
 
 app.use("/api/doctors", DoctorRoute);
 app.use("/api/services", ServiceRoute);
-
+app.use("/api/appointments", AppointmentRoute);
 app.use(globalErrorHandler);
 app.listen(process.env.PORT!, () => {
   console.log(`Server is running on port ${process.env.PORT}`);
